@@ -1,0 +1,40 @@
+# macOS
+.DS_Store
+._*
+.DS_Store?
+
+# IDE / Editor
+.vscode/*
+!.vscode/settings.json
+!.vscode/extensions.json
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+Thumbs.db
+.DS_Store
+
+# Environment
+.env
+.env.local
+.env.*.local
+
+# Logs
+*.log
+logs/
+
+# Temporary files
+*.tmp
+*.temp
+tmp/
+temp/
+
+# Build / Output
+dist/
+build/
+out/
+
+# Dependencies
+node_modules/
