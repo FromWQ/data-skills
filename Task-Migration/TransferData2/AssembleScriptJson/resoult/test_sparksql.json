@@ -1,0 +1,59 @@
+{
+    "taskInfo": {
+        "agentResourceId": 17,
+        "appType": 1,
+        "chosenDatabase": "zy_test",
+        "componentVersion": "3.2",
+        "computeType": 1,
+        "createUserId": 1,
+        "dependOnSettings": 0,
+        "dtuicTenantId": 0,
+        "engineType": 1,
+        "exeArgs": "",
+        "flowId": 0,
+        "id": 0,
+        "isDeleted": 0,
+        "isPublishToProduce": 0,
+        "jobBuildType": 1,
+        "mainClass": "",
+        "name": "test_sparksql",
+        "nodePid": 33357,
+        "ownerUserId": 1,
+        "ownerUserName": "admin@dtstack.com",
+        "periodType": 2,
+        "projectId": 695,
+        "projectScheduleStatus": 0,
+        "scheduleConf": "{\"isFailRetry\":true,\"beginDate\":\"2001-01-01\",\"min\":0,\"periodType\":\"2\",\"hour\":5,\"selfReliance\":0,\"endDate\":\"2121-01-01\",\"maxRetryNum\":\"3\"}",
+        "scheduleStatus": 1,
+        "sqlText": "select * from students",
+        "submitStatus": 1,
+        "taskDesc": "",
+        "taskGroup": 0,
+        "taskId": 7978813,
+        "taskType": 0,
+        "taskParams": "## Driver 程序使用的 CPU 核数，默认为 1\n# spark.driver.cores=1\n\n## Driver 程序使用内存大小，默认 1g\n# spark.driver.memory=1g\n\n## 对 Spark 每个 action 结果集大小的限制，最少是 1M，若设为 0 则不限制大小。\n## 若 Job 结果超过限制则会异常退出，若结果集限制过大也可能造成 OOM 问题，默认 1g\n# spark.driver.maxResultSize=1g\n\n## 启动的 executor 的数量，默认为 1\n# spark.executor.instances=1\n\n## 每个 executor 使用的 CPU 核数，默认为 1\n# spark.executor.cores=1\n\n## 每个 executor 内存大小，默认 1g\n# spark.executor.memory=1g\n\n## 任务优先级，值越小，优先级越高，范围:1-1000\n\n\n## spark 日志级别可选 ALL, DEBUG, ERROR, FATAL, INFO, OFF, TRACE, WARN\n# logLevel = INFO\n\n## spark 中所有网络交互的最大超时时间\n# spark.network.timeout=120s\n\n## executor 的 OffHeap 内存，和 spark.executor.memory 配置使用\n# spark.yarn.executor.memoryOverhead=\n\n## 设置 spark sql shuffle 分区数，默认 200\n# spark.sql.shuffle.partitions=200\n\n## 开启 spark 推测行为，默认 false\n# spark.speculation=false\nspark.executor.cores=2\nspark.executor.memory=2g",
+        "tenantId": 10719,
+        "yarnResourceName": "saas"
+    },
+    "taskTaskInfo": [
+        {
+            "customOffset": 0,
+            "forwardDirection": 1,
+            "isCurrentProject": true,
+            "projectAlias": "zy_test",
+            "taskName": "mysql2hive_01",
+            "taskType": 2,
+            "upDownRelyType": 0
+        },
+        {
+            "customOffset": 0,
+            "forwardDirection": 1,
+            "isCurrentProject": true,
+            "projectAlias": "zy_test",
+            "taskName": "mysql2hive_02",
+            "taskType": 2,
+            "upDownRelyType": 0
+        }
+    ],
+    "updateEnvParam": false
+}
