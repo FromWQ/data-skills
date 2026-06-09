@@ -1,0 +1,1 @@
+{"createTime":"2026-05-18 15:20:58","createUser":"admin@dtstack.com","dataSourceList":[{"dataSourceName":"zy_test_MYSQL","dataSourceType":1},{"dataSourceName":"zy_test_HADOOP","dataSourceType":45}],"engineList":[{"engineType":1,"schema":"zy_test"}],"packageDesc":"root+sync+sql","packageName":"BP_2026_05_18_1633391a","projectName":"zy_test","tenantName":"培训演示","userNameList":[]}
