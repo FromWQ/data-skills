@@ -37,28 +37,51 @@ AssembleSyncJson 是一个整合型技能，将 MysqlReader、HdfsWriter、Parse
 
 ### 2. task_info.xlsx
 
-路径：`C:\Users\67461\Desktop\sync_model\model\task_info.xlsx`
+**本地路径**（优先）：`skills/TransferData2/输入文件/task_info.xlsx`  
+**远程路径**（回退）：`C:\Users\67461\Desktop\sync_model\model\task_info.xlsx`
 
-包含多个 sheet 页，每个 sheet 页对应一个任务：
+包含多个 sheet 页，每个 sheet 页对应一个任务。
+
+**🆕 新格式**（11列，含 `源名称`/`目标名称`）：
 
 | 字段 | 说明 | 示例 |
 |------|------|------|
-| 源表表名 | MySQL 源表名 | `students` |
+| 源名称 | 源数据源名称（匹配 dataSource_info 的 sheet 名/dataSourceName） | `zy_test_MYSQL` |
 | 源表类型 | 源数据源类型 | `mysql` |
-| 源表字段 | 源字段名 | `id`, `name`, `age` |
-| 源表字段类型 | 源字段类型 | `INT`, `VARCHAR(100)` |
+| 源表表名 | MySQL 源表名 | `students` |
+| 源表字段 | 源字段名 | `age` |
+| 源表字段类型 | 源字段类型 | `int` |
 | 是否映射 | 是否进行字段映射 | `是`, `否` |
-| 目标表表名 | Hive 目标表名 | `students` |
+| 目标名称 | 目标数据源名称（匹配 dataSource_info 的 sheet 名/dataSourceName） | `zy_test_HADOOP` |
 | 目标表类型 | 目标数据源类型 | `hdfs` |
-| 目标表字段 | 目标字段名 | `id`, `name`, `age` |
-| 目标表字段类型 | 目标字段类型 | `int`, `string` |
-| 分区字段 | 分区字段标识行 | `分区字段`, `pt`, `string` |
+| 目标表表名 | Hive 目标表名 | `students` |
+| 目标表字段 | 目标字段名 | `id` |
+| 目标表字段类型 | 目标字段类型 | `int` |
 
-**字段映射规则**:
+**🔙 旧格式**（9列，兼容格式，无 `源名称`/`目标名称`）：
+
+| 字段 | 说明 | 示例 |
+|------|------|------|
+| 源表表名 | MySQL 源表名 | `student_sex` |
+| 源表类型 | 源数据源类型（用于类型匹配查找 dataSource_info） | `mysql` |
+| 源表字段 | 源字段名 | `id` |
+| 源表字段类型 | 源字段类型 | `int` |
+| 是否映射 | 是否进行字段映射 | `是`, `否` |
+| 目标表表名 | Hive 目标表名 | `students_zwq` |
+| 目标表类型 | 目标数据源类型（用于类型匹配查找 dataSource_info） | `hdfs` |
+| 目标表字段 | 目标字段名 | `id` |
+| 目标表字段类型 | 目标字段类型 | `int` |
+
+**数据源匹配规则（新格式）**：
+- 根据 `源名称` 列的值（如 `zy_test_MYSQL`）去 `dataSource_info.xlsx` 中查找对应 sheet 页名称或 `dataSourceName`
+- 根据 `目标名称` 列的值（如 `zy_test_HADOOP`）去 `dataSource_info.xlsx` 中查找对应 sheet 页名称或 `dataSourceName`
+- 如果未填写源名称/目标名称（旧格式），则回退到按数据源类型（`mysql`/`hdfs`）匹配
+
+**字段映射规则**：
 - 同行映射：源字段和目标字段在同一行
 - "是否映射"为"是"：两个字段进行关联
 - "是否映射"为"否"：不进行关联（字段忽略）
-- 分区字段：单独一行，第一列为"分区字段"，需要在配置中添加分区值
+- 分区字段：单独一行，第一列为"分区字段"
 
 ### 3. taskSchedule_info.xlsx
 
@@ -130,9 +153,11 @@ skills/TransferData/AssembleSyncJson/resoult/
 │       ├── zy_test_MYSQL (sheet)                                 │
 │       └── zy_test_HADOOP (sheet)                                │
 │                                                                 │
-│  📊 task_info.xlsx                                              │
-│       ├── mysql2hive_01 (sheet)                                 │
-│       └── mysql2hive_02 (sheet)                                 │
+│  📊 task_info.xlsx                   ← 优先读取 输入文件/ 本地副本│
+│       ├── mysql2hive_01 (sheet, 新格式)                          │
+│       │   源名称→zy_test_MYSQL, 目标名称→zy_test_HADOOP          │
+│       ├── mysql2hive_02 (sheet, 旧格式兼容)                      │
+│       └── test_sparksql (SQL任务)                                │
 │                                                                 │
 │  📊 taskSchedule_info.xlsx                                      │
 │       └── Sheet1                                                │
@@ -144,6 +169,9 @@ skills/TransferData/AssembleSyncJson/resoult/
 │  │                                                          │   │
 │  │  1. 读取数据源配置 → 构建 dataSourceMap                  │   │
 │  │  2. 读取任务信息 → 按 sheet 分组处理                     │   │
+│  │     🔑 新格式: 根据 源名称/目标名称 匹配 dataSource_info │   │
+│  │                的 sheet 页（dataSourceName）              │   │
+│  │     🔙 旧格式: 回退到按数据源类型（mysql/hdfs）匹配       │   │
 │  │  3. 读取调度配置 → 构建 taskScheduleMap                  │   │
 │  │  4. 对每个任务：                                         │   │
 │  │     - 解析字段映射关系                                   │   │
@@ -267,8 +295,9 @@ skills/TransferData/AssembleSyncJson/resoult/
 
 | Issue | Possible Cause | Solution |
 |-------|----------------|----------|
-| 找不到输入文件 | Excel 文件路径错误 | 确认文件在 `C:\Users\67461\Desktop\sync_model\model\` |
-| 数据源类型不匹配 | task_info 中的数据源类型与 dataSource_info 不一致 | 检查数据源类型标识（mysql/hdfs） |
+| 找不到输入文件 | Excel 文件路径错误 | 优先将 task_info.xlsx 放入 `输入文件/`；确认远程文件在 `C:\Users\67461\Desktop\sync_model\model\` |
+| 数据源匹配失败（新格式） | `源名称`/`目标名称` 与 dataSource_info 的 sheet 名或 dataSourceName 不一致 | 检查名称拼写，确保与 dataSource_info 中的值一致 |
+| 数据源匹配失败（旧格式） | task_info 中的数据源类型与 dataSource_info 不一致 | 检查数据源类型标识（mysql/hdfs）或改用新格式的 源名称/目标名称 |
 | 字段映射错误 | "是否映射"列值不是"是"或"否" | 确保使用中文"是"或"否" |
 | 分区字段未识别 | 分区字段行第一列不是"分区字段" | 确保第一列为"分区字段" |
 | 调度依赖缺失 | taskSchedule_info 中缺少任务名 | 在 taskSchedule_info 中添加对应任务 |
@@ -277,8 +306,10 @@ skills/TransferData/AssembleSyncJson/resoult/
 
 - `SKILL.md` - This file
 - `references/mysql2hive_01.json` - 参考配置模板
+- `references/task_type.xlsx` - 任务类型映射表
 - `scripts/generate_config.py` - 配置生成脚本
 - `resoult/` - 输出目录
+- `../输入文件/task_info.xlsx` - 本地任务配置文件（优先读取）
 
 ## Complete TransferData Flow Comparison
 
@@ -303,4 +334,4 @@ skills/TransferData/AssembleSyncJson/resoult/
 
 ---
 
-*最后更新：2026-05-08*
+*最后更新：2026-05-24*

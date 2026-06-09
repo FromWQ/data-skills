@@ -18,7 +18,7 @@
         "nodePid": 33357,
         "ownerUserId": 1,
         "ownerUserName": "admin@dtstack.com",
-        "periodType": 2,
+        "periodType": 1,
         "projectId": 695,
         "projectScheduleStatus": 0,
         "scheduleConf": "{\"isFailRetry\":true,\"endMin\":\"59\",\"beginHour\":\"0\",\"endDate\":\"2121-01-01\",\"maxRetryNum\":\"3\",\"jobBuildType\":1,\"gapHour\":\"1\",\"beginMin\":\"0\",\"endHour\":\"23\",\"beginDate\":\"2001-01-01\",\"retryIntervalTime\":2,\"periodType\":\"1\",\"selfReliance\":0,\"isTimeout\":false,\"yarnResourceId\":17,\"isLastInstance\":true}",
@@ -27,7 +27,7 @@
         "submitStatus": 1,
         "taskDesc": "",
         "taskGroup": 0,
-        "taskId": 0,
+        "taskId": 5352125,
         "taskType": 2,
         "tenantId": 10719,
         "yarnResourceName": "saas",
@@ -40,7 +40,7 @@
             "isCurrentProject": true,
             "projectAlias": "zy_test",
             "taskName": "root",
-            "taskType": 2,
+            "taskType": -1,
             "upDownRelyType": 0
         }
     ],

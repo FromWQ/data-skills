@@ -23,13 +23,25 @@ from typing import Dict, List, Any
 SCRIPT_DIR = Path(__file__).parent
 SKILL_DIR = SCRIPT_DIR.parent
 REFERENCES_DIR = SKILL_DIR / "references"
-OUTPUT_BASE = Path("/mnt/c/Users/67461/Desktop")
+# 输出目录：优先桌面，不可达则放 TransferData2 目录
+_DESKTOP = Path("/mnt/c/Users/67461/Desktop")
+_TRANSFERDATA2_DIR = Path(__file__).parent.parent.parent
+OUTPUT_BASE = _DESKTOP if _DESKTOP.exists() and _DESKTOP.is_dir() else _TRANSFERDATA2_DIR
 
 # Input: Task scripts from AssembleSyncJson (sibling directory under TransferData2)
 ASSEMBLE_SYNC_JSON_RESOULT = Path(__file__).parent.parent.parent / "AssembleSyncJson" / "resoult"
 
+# Input: Task scripts from AssembleScriptJson (SQL tasks)
+ASSEMBLE_SCRIPT_JSON_RESOULT = Path(__file__).parent.parent.parent / "AssembleScriptJson" / "resoult"
+
+# Combined input sources (merged from both skills)
+TASK_RESOULT_DIRS = [ASSEMBLE_SYNC_JSON_RESOULT, ASSEMBLE_SCRIPT_JSON_RESOULT]
+
 # Input: Task schedule configuration
-TASK_SCHEDULE_FILE = Path("/mnt/c/Users/67461/Desktop/sync_model/model/taskSchedule_info.xlsx")
+LOCAL_INPUT_DIR = Path(__file__).parent.parent.parent / "输入文件"
+LOCAL_TASK_SCHEDULE = LOCAL_INPUT_DIR / "taskSchedule_info.xlsx"
+REMOTE_TASK_SCHEDULE = Path("/mnt/c/Users/67461/Desktop/sync_model/model/taskSchedule_info.xlsx")
+TASK_SCHEDULE_FILE = LOCAL_TASK_SCHEDULE if LOCAL_TASK_SCHEDULE.exists() else REMOTE_TASK_SCHEDULE
 
 # Reference files
 REF_PACKAGE_JSON = REFERENCES_DIR / "package.json"
@@ -71,24 +83,29 @@ class ExcelGenerator:
 
 
 def read_task_scripts():
-    """Read all task JSON files from AssembleSyncJson/resoult/"""
+    """Read all task JSON files from both AssembleSyncJson/resoult/ and AssembleScriptJson/resoult/"""
     task_scripts = []
+    seen_files = set()
     
-    if not ASSEMBLE_SYNC_JSON_RESOULT.exists():
-        raise FileNotFoundError(f"找不到 AssembleSyncJson 输出目录：{ASSEMBLE_SYNC_JSON_RESOULT}")
+    for resoult_dir in TASK_RESOULT_DIRS:
+        if not resoult_dir.exists():
+            print(f"  ⊘ 目录不存在，跳过：{resoult_dir}")
+            continue
+        
+        json_files = sorted(resoult_dir.glob("*.json"))
+        for json_file in json_files:
+            if json_file.name in seen_files:
+                continue  # 同名文件跳过（优先使用先扫描的目录）
+            seen_files.add(json_file.name)
+            print(f"  读取任务：{json_file.name}  ({resoult_dir.parent.name})")
+            with open(json_file, 'r', encoding='utf-8') as f:
+                task_scripts.append({
+                    "filename": json_file.name,
+                    "data": json.load(f)
+                })
     
-    json_files = sorted(ASSEMBLE_SYNC_JSON_RESOULT.glob("*.json"))
-    
-    if not json_files:
-        raise FileNotFoundError(f"在 {ASSEMBLE_SYNC_JSON_RESOULT} 中找不到任何 JSON 文件")
-    
-    for json_file in json_files:
-        print(f"  读取任务：{json_file.name}")
-        with open(json_file, 'r', encoding='utf-8') as f:
-            task_scripts.append({
-                "filename": json_file.name,
-                "data": json.load(f)
-            })
+    if not task_scripts:
+        raise FileNotFoundError("所有 resoult 目录中均未找到任何 JSON 文件")
     
     return task_scripts
 
@@ -413,22 +430,23 @@ def main():
     print("AssembleSyncReleasePackage - DTStack Multi-Task Sync Package Assembler")
     print("=" * 60)
     
-    # Check input directory
-    if not ASSEMBLE_SYNC_JSON_RESOULT.exists():
-        print(f"\n错误：找不到 AssembleSyncJson 输出目录")
-        print(f"  路径：{ASSEMBLE_SYNC_JSON_RESOULT}")
-        print(f"  请先运行 AssembleSyncJson 生成任务配置:")
-        print(f"    python3 skills/TransferData2/AssembleSyncJson/scripts/generate_config.py")
+    # Check input directories (from both skills)
+    available_dirs = [d for d in TASK_RESOULT_DIRS if d.exists() and list(d.glob("*.json"))]
+    if not available_dirs:
+        print(f"\n错误：所有 resoult 目录均不存在或无 JSON 文件")
+        for d in TASK_RESOULT_DIRS:
+            print(f"  路径：{d}")
+        print(f"  请先运行 AssembleSyncJson 和/或 AssembleScriptJson 生成任务配置")
         return 1
     
-    # Check for JSON files
-    json_files = list(ASSEMBLE_SYNC_JSON_RESOULT.glob("*.json"))
-    if not json_files:
-        print(f"\n错误：在 {ASSEMBLE_SYNC_JSON_RESOULT} 中找不到任何 JSON 文件")
-        print(f"  请先运行 AssembleSyncJson 生成任务配置")
-        return 1
+    # Collect all JSON files from all available directories
+    all_json_files = []
+    for d in TASK_RESOULT_DIRS:
+        if d.exists():
+            for f in d.glob("*.json"):
+                all_json_files.append(f)
     
-    print(f"\n读取任务脚本 ({len(json_files)} 个任务)...")
+    print(f"\n读取任务脚本 ({len(all_json_files)} 个任务)...")
     task_scripts = read_task_scripts()
     
     # Generate package name with timestamp

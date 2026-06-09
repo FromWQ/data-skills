@@ -27,7 +27,7 @@
         "submitStatus": 1,
         "taskDesc": "",
         "taskGroup": 0,
-        "taskId": 0,
+        "taskId": 4289808,
         "taskType": 2,
         "tenantId": 10719,
         "yarnResourceName": "saas",
@@ -40,7 +40,7 @@
             "isCurrentProject": true,
             "projectAlias": "zy_test",
             "taskName": "root",
-            "taskType": 2,
+            "taskType": -1,
             "upDownRelyType": 0
         }
     ],
