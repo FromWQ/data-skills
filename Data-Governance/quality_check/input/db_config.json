@@ -1,0 +1,9 @@
+{
+    "name": "数仓质量评估数据库配置",
+    "host": "localhost",
+    "port": 3306,
+    "user": "root",
+    "password": "root",
+    "database": "warehouse_test",
+    "charset": "utf8mb4"
+}
